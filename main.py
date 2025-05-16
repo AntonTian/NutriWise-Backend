@@ -67,7 +67,7 @@ def login():
         flask_response = make_response(jsonify(response_data), 200)
         flask_response.set_cookie(
             "token", id_token,
-            httponly=True,
+            httponly=False,
             secure=True,
             samesite='Strict',
             max_age=3600
