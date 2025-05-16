@@ -6,7 +6,18 @@ from flask_cors import CORS
 from flask import Flask, request, jsonify, make_response
 
 app = Flask(__name__)
-CORS(app, origins=['http://localhost:3000', 'http://nutri-wise-delta.vercel.app'], supports_credentials = True)
+CORS(app, supports_credentials=True, resources={
+    r"/*": {
+        "origins": [
+            "http://localhost:3000/",           # untuk dev FE
+            "https://your-frontend-domain.com/" # untuk production
+        ],
+        "allow_headers": [
+            "Content-Type", "Authorization"
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    }
+})
 cred = credentials.Certificate(".idea\ServiceAccountKey.json")
 fa.initialize_app(cred)
 
