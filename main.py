@@ -2,10 +2,11 @@ import firebase_admin as fa
 from firebase_admin import credentials, firestore, auth
 from dotenv import load_dotenv
 import os
+from flask_cors import CORS
 from flask import Flask, request, jsonify, make_response
 
 app = Flask(__name__)
-
+CORS(app, origins=['http://localhost:3000', 'http://nutri-wise-delta.vercel.app'], supports_credentials = True)
 cred = credentials.Certificate(".idea\ServiceAccountKey.json")
 fa.initialize_app(cred)
 
@@ -67,7 +68,7 @@ def login():
         flask_response = make_response(jsonify(response_data), 200)
         flask_response.set_cookie(
             "token", id_token,
-            domain=os.environ.get("http://nutri-wise-delta.vercel.app"),
+            domain="http://nutri-wise-delta.vercel.app",
             path="/",
             httponly=False,
             secure=True,
