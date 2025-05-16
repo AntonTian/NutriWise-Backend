@@ -67,6 +67,8 @@ def login():
         flask_response = make_response(jsonify(response_data), 200)
         flask_response.set_cookie(
             "token", id_token,
+            domain=os.environ.get("http://nutri-wise-delta.vercel.app"),
+            path="/",
             httponly=False,
             secure=True,
             samesite='Strict',
