@@ -6,18 +6,8 @@ from flask_cors import CORS
 from flask import Flask, request, jsonify, make_response
 
 app = Flask(__name__)
-CORS(app, supports_credentials=True, resources={
-    r"/*": {
-        "origins": [
-            "http://localhost:3000/",           # untuk dev FE
-            "https://your-frontend-domain.com/" # untuk production
-        ],
-        "allow_headers": [
-            "Content-Type", "Authorization"
-        ],
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    }
-})
+CORS(app, supports_credentials=True)
+
 cred = credentials.Certificate(".idea\ServiceAccountKey.json")
 fa.initialize_app(cred)
 
@@ -32,8 +22,10 @@ def register():
     email = data.get("email")
     password = data.get("password")
 
-    if not email.endswith("@gmail.com") or len(password) < 8:
-        return jsonify({"error": "Invalid email or password"}), 400
+    if not email.endswith("@gmail.com"):
+        return jsonify({"error": "Invalid email format. Only @gmail.com allowed."}), 400
+    if len(password) < 8:
+        return jsonify({"error": "Password length must be at least 8 characters."}), 400
 
     try:
         user = auth.create_user(email=email, password=password, display_name=name)
@@ -70,22 +62,10 @@ def login():
 
         response_data = {
             "message": "Login successful",
-            "user": {
-                "email": result.get("email"),
-                "name": result.get("displayName")
-            }
+            "token": id_token
         }
 
         flask_response = make_response(jsonify(response_data), 200)
-        flask_response.set_cookie(
-            "token", id_token,
-            domain="http://nutri-wise-delta.vercel.app",
-            path="/",
-            httponly=False,
-            secure=True,
-            samesite='Strict',
-            max_age=3600
-        )
 
         return flask_response
     else:
