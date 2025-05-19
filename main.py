@@ -28,6 +28,13 @@ def register():
         return jsonify({"error": "Password length must be at least 8 characters."}), 400
 
     try:
+        all_users = auth.list_users().users
+        for user in all_users:
+            if user.display_name == name:
+                return jsonify({"error": "Username already exists"}), 409
+            if user.email == email:
+                return jsonify({"error": "Email already registered"}), 409
+
         user = auth.create_user(email=email, password=password, display_name=name)
         return jsonify({
             "message": "User registered successfully",
