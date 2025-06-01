@@ -31,6 +31,8 @@ def extract_ingredient_names(ingredient_lines):
             # Normalize 'to taste'
             part = re.sub(r'\bto taste\b', '', part).strip()
 
+            part = part.replace("-", " ")
+
             # Remove descriptors like 'bruised', 'sliced', etc.
             words = [word for word in part.split() if word not in descriptors_to_ignore]
             cleaned_part = " ".join(words).strip()

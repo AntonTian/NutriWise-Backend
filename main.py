@@ -28,6 +28,7 @@ def register():
         return jsonify({"error": "Password length must be at least 8 characters."}), 400
 
     try:
+        # Check for duplicate username or email in Firebase Auth
         all_users = auth.list_users().users
         for user in all_users:
             if user.display_name == name:
@@ -35,12 +36,22 @@ def register():
             if user.email == email:
                 return jsonify({"error": "Email already registered"}), 409
 
+        # Create user in Firebase Authentication
         user = auth.create_user(email=email, password=password, display_name=name)
+
+        # Save mapping of username -> uid to Firestore Users collection
+        db.collection("Users").document(name).set({
+            "email": email,
+            "uid": user.uid,
+            "created_at": firestore.SERVER_TIMESTAMP
+        })
+
         return jsonify({
             "message": "User registered successfully",
             "uid": user.uid,
             "email": user.email
         }), 201
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -64,8 +75,7 @@ def login():
     response = requests.post(url, json=payload)
 
     if response.status_code == 200:
-        result = response.json()
-        id_token = result.pop("idToken", None)
+        id_token = response.json().get("idToken")
 
         response_data = {
             "message": "Login successful",
@@ -89,6 +99,12 @@ def get_user(uid):
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 404
+
+@app.route("/getAllUserName", methods=["GET"])
+def get_all_usernames():
+    users = auth.list_users().users
+    usernames = [user.display_name for user in users if user.display_name]
+    return jsonify(usernames), 200
 
 if __name__ == "__main__":
     app.run(debug=True)
